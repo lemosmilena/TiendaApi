@@ -1,6 +1,9 @@
 package com.example.tiendaapi.producto;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +29,7 @@ public class ProductoController {
     /** Buscar producto por ID **/
     @GetMapping("/id/{id}")
     public ProductoEntity buscarPorID(@PathVariable Integer id){
+
         return productoService.buscarPorID(id);
     }
 
@@ -49,7 +53,14 @@ public class ProductoController {
 
     /** Modificar producto **/
     @PutMapping("/modificar")
+    @PreAuthorize("hasAnyRole('ROLE_CLIENTE')")
     public void modificarProducto(@RequestBody ProductoEntity productoEntity){
         productoService.guardarProducto(productoEntity);
+    }
+
+    @GetMapping("/mi-rol")
+    public String getMiRol(){
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        return securityContext.getAuthentication().getAuthorities().toString();
     }
 }

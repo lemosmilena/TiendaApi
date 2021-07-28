@@ -1,22 +1,31 @@
 package com.example.tiendaapi.security;
 
+import com.example.tiendaapi.security.auth.UserEntity;
+import com.example.tiendaapi.security.auth.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private final UserService userService;
+
+    @Autowired
+    public WebSecurityConfig(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -32,7 +41,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest()
                 .authenticated()
                 .and()
-                .formLogin();
+                .httpBasic();
     }
 
     @Bean
@@ -41,32 +50,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(daoAuthenticationProvider());
+    }
+
     @Bean
-    protected UserDetailsService userDetailsService() {
-        UserDetails usuarioUno = User.builder()
-                .username("Melisa")
-                .password(passwordEncoder().encode("holaquetal"))
-                .roles("USER")
-                .build();
-
-        UserDetails usuarioDos = User.builder()
-                .username("Matias")
-                .password(passwordEncoder().encode("123451"))
-                .roles("ADMIN")
-                .build();
-
-        UserDetails usuarioTres = User.builder()
-                .username("Juan")
-                .password(passwordEncoder().encode("asdfasdf"))
-                .roles("USER")
-                .build();
-
-        UserDetails usuarioCuatro = User.builder()
-                .username("Franco")
-                .password(passwordEncoder().encode("34567"))
-                .roles("ADMIN")
-                .build();
-
-        return new InMemoryUserDetailsManager(usuarioUno, usuarioDos, usuarioTres, usuarioCuatro);
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+        daoAuthenticationProvider.setUserDetailsService(userService);
+        return daoAuthenticationProvider;
     }
 }
