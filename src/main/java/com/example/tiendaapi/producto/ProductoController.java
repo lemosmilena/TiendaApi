@@ -22,12 +22,14 @@ public class ProductoController {
 
     /** Listar todos los productos **/
     @GetMapping
+    @PreAuthorize("hasAnyRole('ROLE_CLIENTE', 'ROLE_ADMIN')")
     public List<ProductoEntity> getProductos(){
         return productoService.getProductos();
     }
 
     /** Buscar producto por ID **/
     @GetMapping("/id/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_CLIENTE', 'ROLE_ADMIN')")
     public ProductoEntity buscarPorID(@PathVariable Integer id){
 
         return productoService.buscarPorID(id);
@@ -35,11 +37,13 @@ public class ProductoController {
 
     /** Listar por nombre **/
     @GetMapping("/nombre/{nombre}")
+    @PreAuthorize("hasAnyRole('ROLE_CLIENTE', 'ROLE_ADMIN')")
     public List<ProductoEntity> buscarPorNombre(@PathVariable String nombre){
         return productoService.buscarPorNombre(nombre);
     }
 
     /** Guardar producto **/
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @PostMapping(value = "/guardar", consumes = "application/json")
     public void guardarProducto(@RequestBody ProductoEntity productoEntity){
         productoService.guardarProducto(productoEntity);
@@ -47,18 +51,20 @@ public class ProductoController {
 
     /** Eliminar producto **/
     @DeleteMapping("/borrar/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public void borrarProducto(@PathVariable Integer id){
         productoService.eliminarProductoPorID(id);
     }
 
     /** Modificar producto **/
     @PutMapping("/modificar")
-    @PreAuthorize("hasAnyRole('ROLE_CLIENTE')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public void modificarProducto(@RequestBody ProductoEntity productoEntity){
         productoService.guardarProducto(productoEntity);
     }
 
     @GetMapping("/mi-rol")
+    @PreAuthorize("hasAnyRole('ROLE_CLIENTE', 'ROLE_ADMIN')")
     public String getMiRol(){
         SecurityContext securityContext = SecurityContextHolder.getContext();
         return securityContext.getAuthentication().getAuthorities().toString();
